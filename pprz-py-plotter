@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+# TODO: Put info here
+
+import argparse
+import numpy
+import os
+
+# XML parsing
+from lxml import etree
+
+# Useful:
+# https://numpy.org/doc/stable/reference/generated/numpy.array.html
+# https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
+
+
+# Proposed data structure:
+# data_dict[id] = named_tuple[n].(timestamp, var1, var2...)
+
+# (Suppose INS freq = 0.1 s, 10 Hz)
+# Example for id = 2, field INS:
+
+# data[2] -> INS[0] -> (0.1, x, y, z, vx, vy, vz, ax, ay, az)
+# data[2] -> INS[1] -> (0.2, x, y, z, vx, vy, vz, ax, ay, az)
+# ...
+# data[2] -> INS[11] -> (1.2, x, y, z, vx, vy, vz, ax, ay, az)
+
+# Say, we want to graph the x position of INS:
+
+# for i in range(0, data[2].INS.size):
+#     x = data[2].INS[i].x
+#     print(x)
+
+# Possible problems:
+# - Construct the named_tuple dynamically
+# - Convert to numpy array
+
+# Simplify the .log file to a file which only contains the telemetry block
+# This file will make easier to extract the vars for each message
+def convert_to_telemetry_xml(logfile):
+    parser = etree.XMLParser(remove_comments=True, recover=True)
+    root = etree.fromstring(logfile, parser)
+
+    # Find msg_class NAME = telemetry and ID = 1
+    telemetry_xml = None
+    print(root.findall('msg_class')) # TODO: This doesn't work, might be due to only searching one depth level?
+    for msg_class in root.findall('msg_class'):
+        if msg_class.get('NAME') == 'telemetry' and msg_class.get('ID') == '1':
+            telemetry_xml = etree.tostring(msg_class, encoding='unicode')
+            break
+        else:
+            print("No telemetry messages found in the logfile!")
+
+    # Crear el directorio ./tmp si no existe
+    output_dir = './tmp'
+    os.makedirs(output_dir, exist_ok=True)
+
+    if args.verbose:
+        print("Extracted XML block:")
+        print(telemetry_xml)
+
+    # Save the msg_class block in a file
+    output_file = os.path.join(output_dir, 'telemetry_messages.xml')
+    if telemetry_xml:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(telemetry_xml)
+
+    if args.verbose:
+        print("Extracted XML block saved in", output_file)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="pprz-py-plotter")
+    parser.add_argument('datafile', help="Paparazzi's log .data file")
+    parser.add_argument('logfile', help="Paparazzi's log .log file")
+    parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help="Display debug messages")
+    args = parser.parse_args()
+
+    # Parse logfile for messages and its variables
+    with open(args.logfile, 'r', encoding='utf-8') as logfile:
+        if args.verbose:
+            print("Parsing logfile...")
+        
+        # To parse the logfile with variables, use the
+        # <message NAME="...">
+        # blocks in the .log file
+        # We only need the msg_class NAME="telemetry" ones
+        convert_to_telemetry_xml(logfile.read())
+
+    # Convert datafile to numpy arrays
+    '''
+    with open(args.datafile, 'r', encoding='utf-8') as datafile:
+        if args.verbose:
+            print("Recovering data and converting to numpy array...")
+    '''
