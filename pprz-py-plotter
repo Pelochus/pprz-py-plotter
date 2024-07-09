@@ -52,7 +52,7 @@ def clean_and_format_xml(xml):
 
 # Simplify the .log file to a file which only contains the telemetry block
 # This file will make easier to extract the vars for each message
-def convert_to_telemetry_xml(logfile):
+def make_messages_xml(logfile):
     parser = etree.XMLParser(remove_comments=True, recover=True)
     root = etree.fromstring(logfile, parser)
 
@@ -67,32 +67,22 @@ def convert_to_telemetry_xml(logfile):
 
     telemetry_xml = clean_and_format_xml(telemetry_xml)
 
-    # Save the msg_class block in a file
-    output_file = os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME)
-    if telemetry_xml:
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(telemetry_xml)
-
-    if args.verbose:
-        print("Telemetry messages block XML saved in", output_file)
-
-def extract_messages_vars(msg_file):
     parser = etree.XMLParser(remove_comments=True, recover=True)
-    messages = etree.fromstring(msg_file, parser)
+    messages = etree.fromstring(telemetry_xml, parser)
 
-    # Find msg_class NAME = telemetry and ID = 1
     vars_xml = ''
     for msg in messages.findall('message'):
         vars_xml += etree.tostring(msg, encoding='unicode')
-    
+        
     # Save the msg_class block in a file
-    output_file = os.path.join(TMP_DIR, 'messages_vars.xml')
+    output_file = os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME)
     if vars_xml:
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(vars_xml)
-
+    
     if args.verbose:
-        print("Messages vars saved in ", output_file)
+        print("Telemetry messages block XML saved in", output_file)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -108,14 +98,7 @@ if __name__ == '__main__':
         if args.verbose:
             print("Parsing logfile...")
         
-        # To parse the logfile with variables, use the
-        # <message NAME="...">
-        # blocks in the .log file
-        # We only need the msg_class NAME="telemetry" ones
-        convert_to_telemetry_xml(logfile.read())
-        
-        msg_file = open(os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME), 'r', encoding='utf-8')
-        extract_messages_vars(msg_file.read())
+        make_messages_xml(logfile.read())
 
     # Convert datafile to numpy arrays
     '''
