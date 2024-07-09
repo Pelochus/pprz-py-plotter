@@ -9,6 +9,11 @@ import os
 # XML parsing
 from lxml import etree
 
+# Constants
+MESSAGES_BLOCK = 'protocol/msg_class'
+MESSAGES_OUTPUT_FILENAME = 'telemetry_messages.xml'
+TMP_DIR = './tmp'
+
 # Useful:
 # https://numpy.org/doc/stable/reference/generated/numpy.array.html
 # https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
@@ -35,6 +40,16 @@ from lxml import etree
 # - Construct the named_tuple dynamically
 # - Convert to numpy array
 
+def clean_and_format_xml(xml):
+    # Remove comments and recover from errors
+    parser = etree.XMLParser(remove_comments=True, recover=True, remove_blank_text=True)
+    root = etree.fromstring(xml, parser)
+
+    # Formatear el XML con pretty_print
+    formatted_xml = etree.tostring(root, pretty_print=True, encoding='unicode')
+    
+    return formatted_xml
+
 # Simplify the .log file to a file which only contains the telemetry block
 # This file will make easier to extract the vars for each message
 def convert_to_telemetry_xml(logfile):
@@ -43,30 +58,41 @@ def convert_to_telemetry_xml(logfile):
 
     # Find msg_class NAME = telemetry and ID = 1
     telemetry_xml = None
-    print(root.findall('msg_class')) # TODO: This doesn't work, might be due to only searching one depth level?
-    for msg_class in root.findall('msg_class'):
+    for msg_class in root.findall(MESSAGES_BLOCK):
         if msg_class.get('NAME') == 'telemetry' and msg_class.get('ID') == '1':
             telemetry_xml = etree.tostring(msg_class, encoding='unicode')
             break
         else:
             print("No telemetry messages found in the logfile!")
 
-    # Crear el directorio ./tmp si no existe
-    output_dir = './tmp'
-    os.makedirs(output_dir, exist_ok=True)
-
-    if args.verbose:
-        print("Extracted XML block:")
-        print(telemetry_xml)
+    telemetry_xml = clean_and_format_xml(telemetry_xml)
 
     # Save the msg_class block in a file
-    output_file = os.path.join(output_dir, 'telemetry_messages.xml')
+    output_file = os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME)
     if telemetry_xml:
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(telemetry_xml)
 
     if args.verbose:
-        print("Extracted XML block saved in", output_file)
+        print("Telemetry messages block XML saved in", output_file)
+
+def extract_messages_vars(msg_file):
+    parser = etree.XMLParser(remove_comments=True, recover=True)
+    messages = etree.fromstring(msg_file, parser)
+
+    # Find msg_class NAME = telemetry and ID = 1
+    vars_xml = ''
+    for msg in messages.findall('message'):
+        vars_xml += etree.tostring(msg, encoding='unicode')
+    
+    # Save the msg_class block in a file
+    output_file = os.path.join(TMP_DIR, 'messages_vars.xml')
+    if vars_xml:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(vars_xml)
+
+    if args.verbose:
+        print("Messages vars saved in ", output_file)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -74,6 +100,8 @@ if __name__ == '__main__':
     parser.add_argument('logfile', help="Paparazzi's log .log file")
     parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help="Display debug messages")
     args = parser.parse_args()
+
+    os.makedirs(TMP_DIR, exist_ok=True)
 
     # Parse logfile for messages and its variables
     with open(args.logfile, 'r', encoding='utf-8') as logfile:
@@ -85,6 +113,9 @@ if __name__ == '__main__':
         # blocks in the .log file
         # We only need the msg_class NAME="telemetry" ones
         convert_to_telemetry_xml(logfile.read())
+        
+        msg_file = open(os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME), 'r', encoding='utf-8')
+        extract_messages_vars(msg_file.read())
 
     # Convert datafile to numpy arrays
     '''
