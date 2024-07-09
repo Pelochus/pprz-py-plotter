@@ -69,19 +69,12 @@ def make_messages_xml(logfile):
             exit(1)
 
     telemetry_xml = clean_and_format_xml(telemetry_xml)
-
-    parser = etree.XMLParser(remove_comments=True, recover=True)
-    messages = etree.fromstring(telemetry_xml, parser)
-
-    vars_xml = ''
-    for msg in messages.findall('message'):
-        vars_xml += etree.tostring(msg, encoding='unicode')
         
     # Save the msg_class block in a file
     output_file = os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME)
-    if vars_xml:
+    if telemetry_xml:
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(vars_xml)
+            f.write(telemetry_xml)
     
     if args.verbose:
         print("Telemetry messages block XML saved in", output_file)
@@ -113,7 +106,7 @@ def create_structs():
             struct = namedtuple(msg_name, fields)
 
             # Add the named tuple to the data_dict
-            data_dict[msg_id] = struct
+            # data_dict[msg_id] = struct
 
             if args.verbose:
                 print("Created named tuple for message", msg_name, "with fields", fields)
@@ -137,7 +130,7 @@ if __name__ == '__main__':
             print("Parsing logfile...")
         
         make_messages_xml(logfile.read())
-        create_structs()
+        # create_structs()
 
     # Convert datafile to numpy arrays
     '''
