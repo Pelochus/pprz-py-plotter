@@ -1,4 +1,0 @@
-<message NAME="AUTOPILOT_VERSION" ID="1">
-  <field TYPE="uint32" NAME="version">version encoded as: MAJOR * 10000 + MINOR * 100 + PATCH</field>
-  <field TYPE="char[]" NAME="desc">version description as string from paparazzi_version</field>
-</message>
