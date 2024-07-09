@@ -6,7 +6,7 @@ import argparse
 import numpy
 import os
 
-# XML parsing
+from collections import namedtuple
 from lxml import etree
 
 # Constants
@@ -50,20 +50,23 @@ def clean_and_format_xml(xml):
     
     return formatted_xml
 
-# Simplify the .log file to a file which only contains the telemetry block
-# This file will make easier to extract the vars for each message
+'''
+    Simplify the .log file to a file which only contains the telemetry block
+    This file will make easier to extract the vars for each message
+'''
 def make_messages_xml(logfile):
     parser = etree.XMLParser(remove_comments=True, recover=True)
     root = etree.fromstring(logfile, parser)
 
     # Find msg_class NAME = telemetry and ID = 1
-    telemetry_xml = None
+    telemetry_xml = ''
     for msg_class in root.findall(MESSAGES_BLOCK):
         if msg_class.get('NAME') == 'telemetry' and msg_class.get('ID') == '1':
             telemetry_xml = etree.tostring(msg_class, encoding='unicode')
             break
         else:
             print("No telemetry messages found in the logfile!")
+            exit(1)
 
     telemetry_xml = clean_and_format_xml(telemetry_xml)
 
@@ -83,6 +86,41 @@ def make_messages_xml(logfile):
     if args.verbose:
         print("Telemetry messages block XML saved in", output_file)
 
+'''
+    Create data structures for each message
+    
+    Examples:
+    INS(timestamp, x, y, z, vx, vy, vz, ax, ay, az)
+    GVF(timestamp, error, traj, s, ke, p)
+'''
+def create_structs():
+    # Parse the telemetry messages XML
+    with open(os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME), 'r', encoding='utf-8') as f:
+        parser = etree.XMLParser(remove_comments=True, recover=True)
+        root = etree.fromstring(f.read(), parser)
+
+        for msg in root.findall('message'):
+            msg_name = msg.get('NAME')
+            msg_id = msg.get('ID')
+            msg_vars = msg.findall('field')
+
+            # Create a named tuple for each message
+            fields = ['timestamp']
+            for var in msg_vars:
+                fields.append(var.get('NAME'))
+
+            # Create the named tuple
+            struct = namedtuple(msg_name, fields)
+
+            # Add the named tuple to the data_dict
+            data_dict[msg_id] = struct
+
+            if args.verbose:
+                print("Created named tuple for message", msg_name, "with fields", fields)
+
+'''
+    Parse the data file and convert it to numpy arrays
+'''
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -99,6 +137,7 @@ if __name__ == '__main__':
             print("Parsing logfile...")
         
         make_messages_xml(logfile.read())
+        create_structs()
 
     # Convert datafile to numpy arrays
     '''
