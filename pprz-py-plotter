@@ -142,7 +142,8 @@ def parse_datafile(datafile):
     This will assume float values only
 '''
 def convert_message_to_numpy(id, message):
-    pass
+    for var in MESSAGES_TYPES[message]._fields:
+        convert_var_to_numpy(id, message, var)
 
 '''
     Convert a certain variables (say, x position from POS messages) to a numpy array
@@ -157,7 +158,11 @@ def convert_var_to_numpy(id, message, var):
         print(array)
 
     nparray = numpy.array(array)
-    numpy.savetxt(os.path.join(OUTPUT_DIR, 'nparray.txt'), nparray) # Save to txt for later processing
+
+    message_dir = OUTPUT_DIR + '/' + message
+    os.makedirs(message_dir, exist_ok=True)
+    filename = os.path.join(message_dir, var + '.npy')
+    numpy.savetxt(filename, nparray) # Save to txt for later processing
 
     return nparray
 
@@ -168,6 +173,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help="Display debug messages")
     args = parser.parse_args()
 
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(TMP_DIR, exist_ok=True)
 
     # Parse logfile for messages and its variables
@@ -188,4 +194,4 @@ if __name__ == '__main__':
     # Convert datafile to numpy arrays
     with open(args.datafile, 'r', encoding='utf-8') as datafile:
         parse_datafile(datafile)
-        convert_var_to_numpy(204, 'INS', 'ins_z')
+        convert_message_to_numpy(204, 'INS')
