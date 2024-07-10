@@ -2,6 +2,29 @@
 
 # TODO: Put info here
 
+'''
+    Proposed data structure:
+    data_dict[id] = named_tuple[n].(timestamp, var1, var2...)
+
+    (Suppose INS freq = 0.1 s, 10 Hz)
+    Example for id = 2, field INS:
+
+    data[2] -> INS[0] -> (0.1, x, y, z, vx, vy, vz, ax, ay, az)
+    data[2] -> INS[1] -> (0.2, x, y, z, vx, vy, vz, ax, ay, az)
+    ...
+    data[2] -> INS[11] -> (1.2, x, y, z, vx, vy, vz, ax, ay, az)
+
+    Say, we want to graph the x position of INS:
+
+    for i in range(0, data[2].INS.size):
+        x = data[2].INS[i].x
+        print(x)
+'''
+
+# Related Links:
+# https://numpy.org/doc/stable/reference/generated/numpy.array.html
+# https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
+
 import argparse
 import numpy
 import os
@@ -12,43 +35,17 @@ from lxml import etree
 # Constants
 MESSAGES_BLOCK = 'protocol/msg_class'
 MESSAGES_OUTPUT_FILENAME = 'telemetry_messages.xml'
+DATA_OUTPUT_FILENAME = 'data_log.txt'
 TMP_DIR = './tmp'
 
-# Data structures dictionary
-MESSAGES_TYPES = {}
-
-# Useful:
-# https://numpy.org/doc/stable/reference/generated/numpy.array.html
-# https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
-
-
-# Proposed data structure:
-# data_dict[id] = named_tuple[n].(timestamp, var1, var2...)
-
-# (Suppose INS freq = 0.1 s, 10 Hz)
-# Example for id = 2, field INS:
-
-# data[2] -> INS[0] -> (0.1, x, y, z, vx, vy, vz, ax, ay, az)
-# data[2] -> INS[1] -> (0.2, x, y, z, vx, vy, vz, ax, ay, az)
-# ...
-# data[2] -> INS[11] -> (1.2, x, y, z, vx, vy, vz, ax, ay, az)
-
-# Say, we want to graph the x position of INS:
-
-# for i in range(0, data[2].INS.size):
-#     x = data[2].INS[i].x
-#     print(x)
-
-# Possible problems:
-# - Construct the named_tuple dynamically
-# - Convert to numpy array
+MESSAGES_TYPES = {} # Data structures (named tuples) for each message
+DATA_DICT = {} # Data dictionary, with up to N (number of UAVs, IDs) MESSAGE_TYPES
 
 def clean_and_format_xml(xml):
     # Remove comments and recover from errors
     parser = etree.XMLParser(remove_comments=True, recover=True, remove_blank_text=True)
     root = etree.fromstring(xml, parser)
 
-    # Formatear el XML con pretty_print
     formatted_xml = etree.tostring(root, pretty_print=True, encoding='unicode')
     
     return formatted_xml
@@ -106,14 +103,43 @@ def create_structs():
                 fields.append(var.get('NAME'))
 
             # Create the named tuple
-            MESSAGES_TYPES[msg_id] = namedtuple(msg_name, fields)
+            MESSAGES_TYPES[msg_name] = namedtuple(msg_name, fields)
 
             if args.verbose:
                 print("Created named tuple for message", msg_name, "with id", msg_id, "and fields", fields)
 
 '''
-    Parse the data file and convert it to numpy arrays
+    Parse the datafile
 '''
+def parse_datafile(datafile):
+    for line in datafile:
+        # Split by spaces
+        parts = line.split()
+        
+        # Extract data
+        timestamp = float(parts[0])
+        id = int(parts[1])
+        name = parts[2]
+        data = parts[3:]
+
+        # Create the inner data dictionary for the id
+        if id not in DATA_DICT:
+            DATA_DICT[id] = {}
+        
+        # Create the inner array for the inner dict
+        if name not in DATA_DICT[id]:
+            DATA_DICT[id][name] = []
+         
+        # Save using the id and name. Previously check if name is saved (if it's a telemetry message)
+        if name in MESSAGES_TYPES:
+            linedata = MESSAGES_TYPES[name](timestamp, *data)
+            DATA_DICT[id][name].append(linedata)
+
+            if args.verbose:
+                output_file = os.path.join(TMP_DIR, DATA_OUTPUT_FILENAME)
+                with open(output_file, 'a', encoding='utf-8') as f:
+                    f.write(str(linedata))
+                    f.write('\n')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -126,18 +152,19 @@ if __name__ == '__main__':
 
     # Parse logfile for messages and its variables
     with open(args.logfile, 'r', encoding='utf-8') as logfile:
-        if args.verbose:
-            print("Parsing logfile...")
-        
         make_messages_xml(logfile.read())
         create_structs()
 
-        for n in MESSAGES_TYPES:
-            print(MESSAGES_TYPES[n])
+        if args.verbose:
+            for n in MESSAGES_TYPES:
+                print(n, MESSAGES_TYPES[n])
+
+        # Example of usage
+        '''
+            b = MESSAGES_TYPES["PONG"](1)
+            print(b, b.TIMESTAMP)
+        '''
 
     # Convert datafile to numpy arrays
-    '''
     with open(args.datafile, 'r', encoding='utf-8') as datafile:
-        if args.verbose:
-            print("Recovering data and converting to numpy array...")
-    '''
+        parse_datafile(datafile)
