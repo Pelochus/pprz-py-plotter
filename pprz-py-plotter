@@ -2,25 +2,6 @@
 
 # TODO: Put info here
 
-'''
-    Proposed data structure:
-    data_dict[id] = named_tuple[n].(timestamp, var1, var2...)
-
-    (Suppose INS freq = 0.1 s, 10 Hz)
-    Example for id = 2, field INS:
-
-    data[2] -> INS[0] -> (0.1, x, y, z, vx, vy, vz, ax, ay, az)
-    data[2] -> INS[1] -> (0.2, x, y, z, vx, vy, vz, ax, ay, az)
-    ...
-    data[2] -> INS[11] -> (1.2, x, y, z, vx, vy, vz, ax, ay, az)
-
-    Say, we want to graph the x position of INS:
-
-    for i in range(0, data[2].INS.size):
-        x = data[2].INS[i].x
-        print(x)
-'''
-
 # Related Links:
 # https://numpy.org/doc/stable/reference/generated/numpy.array.html
 # https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
@@ -36,11 +17,15 @@ from lxml import etree
 MESSAGES_BLOCK = 'protocol/msg_class'
 MESSAGES_OUTPUT_FILENAME = 'telemetry_messages.xml'
 DATA_OUTPUT_FILENAME = 'data_log.txt'
+OUTPUT_DIR = './output'
 TMP_DIR = './tmp'
 
 MESSAGES_TYPES = {} # Data structures (named tuples) for each message
 DATA_DICT = {} # Data dictionary, with up to N (number of UAVs, IDs) MESSAGE_TYPES
 
+'''
+    Clean and format the XML, removing comments and recovering from errors
+'''
 def clean_and_format_xml(xml):
     # Remove comments and recover from errors
     parser = etree.XMLParser(remove_comments=True, recover=True, remove_blank_text=True)
@@ -109,7 +94,18 @@ def create_structs():
                 print("Created named tuple for message", msg_name, "with id", msg_id, "and fields", fields)
 
 '''
-    Parse the datafile
+    Parse the datafile, saving the data in the DATA_DICT dictionary
+    Proposed data structure:
+
+    DATA_DICT[id] = inner_dict[name][n].(timestamp, var1, var2...)
+
+    (Suppose INS freq = 0.1 s, 10 Hz)
+    Example for id = 2, field INS:
+
+    DATA_DICT[2] -> inner_dict[INS][0] -> (0.1, x, y, z, vx, vy, vz, ax, ay, az)
+    DATA_DICT[2] -> inner_dict[INS][1] -> (0.2, x, y, z, vx, vy, vz, ax, ay, az)
+    ...
+    DATA_DICT[2] -> inner_dict[INS][11] -> (1.2, x, y, z, vx, vy, vz, ax, ay, az)
 '''
 def parse_datafile(datafile):
     for line in datafile:
@@ -140,6 +136,30 @@ def parse_datafile(datafile):
                 with open(output_file, 'a', encoding='utf-8') as f:
                     f.write(str(linedata))
                     f.write('\n')
+'''
+    Convert a certain message (for example, position messages) to a numpy array
+    Only for a certain ID. Convert the array of messages
+    This will assume float values only
+'''
+def convert_message_to_numpy(id, message):
+    pass
+
+'''
+    Convert a certain variables (say, x position from POS messages) to a numpy array
+    This will assume float values only
+'''
+def convert_var_to_numpy(id, message, var):
+    array = []
+    for i in range(len(DATA_DICT[id][message])):
+        array.append(float(getattr(DATA_DICT[id][message][i], var)))
+
+    if args.verbose:
+        print(array)
+
+    nparray = numpy.array(array)
+    numpy.savetxt(os.path.join(OUTPUT_DIR, 'nparray.txt'), nparray) # Save to txt for later processing
+
+    return nparray
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -168,3 +188,4 @@ if __name__ == '__main__':
     # Convert datafile to numpy arrays
     with open(args.datafile, 'r', encoding='utf-8') as datafile:
         parse_datafile(datafile)
+        convert_var_to_numpy(204, 'INS', 'ins_z')
