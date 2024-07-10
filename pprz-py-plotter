@@ -14,6 +14,9 @@ MESSAGES_BLOCK = 'protocol/msg_class'
 MESSAGES_OUTPUT_FILENAME = 'telemetry_messages.xml'
 TMP_DIR = './tmp'
 
+# Data structures dictionary
+MESSAGES_TYPES = {}
+
 # Useful:
 # https://numpy.org/doc/stable/reference/generated/numpy.array.html
 # https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
@@ -98,18 +101,15 @@ def create_structs():
             msg_vars = msg.findall('field')
 
             # Create a named tuple for each message
-            fields = ['timestamp']
+            fields = ['TIMESTAMP'] # To differentiate from a possible timestamp field inside the message
             for var in msg_vars:
                 fields.append(var.get('NAME'))
 
             # Create the named tuple
-            struct = namedtuple(msg_name, fields)
-
-            # Add the named tuple to the data_dict
-            # data_dict[msg_id] = struct
+            MESSAGES_TYPES[msg_id] = namedtuple(msg_name, fields)
 
             if args.verbose:
-                print("Created named tuple for message", msg_name, "with fields", fields)
+                print("Created named tuple for message", msg_name, "with id", msg_id, "and fields", fields)
 
 '''
     Parse the data file and convert it to numpy arrays
@@ -130,7 +130,10 @@ if __name__ == '__main__':
             print("Parsing logfile...")
         
         make_messages_xml(logfile.read())
-        # create_structs()
+        create_structs()
+
+        for n in MESSAGES_TYPES:
+            print(MESSAGES_TYPES[n])
 
     # Convert datafile to numpy arrays
     '''
