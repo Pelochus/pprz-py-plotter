@@ -29,7 +29,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 class MplCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=16, height=9, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super().__init__(fig)
@@ -51,6 +51,9 @@ class pyplottergui(QMainWindow):
         # Main window config
         self.setWindowTitle('pprz-py-plotter')
         self.setGeometry(600, 600, 800, 400)
+        self.setWindowIcon(QIcon('img/logo.png'))
+
+        # Menu bar
         menubar = self.menuBar()
 
         # File menu
@@ -82,7 +85,7 @@ class pyplottergui(QMainWindow):
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         layout = QVBoxLayout(centralWidget)
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.canvas = MplCanvas(self, width=16, height=10, dpi=100)
         layout.addWidget(self.canvas)
 
         self.show()
