@@ -7,10 +7,16 @@ New version of Paparazzi's logplotter utility, focused around NumPy.
 First, install Python and numpy on your system:
 
 ```bash
-sudo apt install python3-full python3-numpy python3-lxml
+sudo apt install python3-full python3-numpy python3-lxml python3-pyqt5 -y
 ```
 
-Run:
+Run (GUI):
+
+```bash
+./pprz-py-plotter
+```
+
+Run (CLI):
 
 ```bash
 ./pprz-py-plotter filename.data filename.log [-v/--verbose]

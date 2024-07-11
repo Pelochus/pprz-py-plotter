@@ -5,6 +5,8 @@ pprz-py-plotter - Plotting Paparazzi log and data files with Python, NumPy and M
 
 Recommended to read the provided pprzlogutils library documentation for more information.
 
+This file is a CLI example, the recommended way is to use the GUI
+
 Author: Pelochus
 """
 

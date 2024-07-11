@@ -1,7 +1,7 @@
 """
 pprzlogutils - A Python library for parsing and processing Paparazzi UAV log files.
 
-This library provides functions to parse Paparazzi UAV log files and extract telemetry data. 
+logparser provides functions to parse Paparazzi UAV log files and extract telemetry data. 
 It also includes utilities to convert the extracted data into numpy arrays for further analysis.
 
 Author: Pelochus
