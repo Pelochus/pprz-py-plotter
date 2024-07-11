@@ -21,71 +21,71 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QStatusBar,
     QToolBar,
+    QVBoxLayout,
     QWidget,
 )
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+class MplCanvas(FigureCanvas):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super().__init__(fig)
+        self.setParent(parent)
+        
+        self.plot_example()
+
+    def plot_example(self):
+        # Ejemplo de un gráfico simple
+        x = [0, 1, 2, 3, 4]
+        y = [0, 1, 4, 9, 16]
+        self.axes.plot(x, y)
+        self.draw()
 
 class pyplottergui(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Configuración de la ventana principal
+        # Main window config
         self.setWindowTitle('pprz-py-plotter')
         self.setGeometry(600, 600, 800, 400)
-
-        # Crear la barra de menú
         menubar = self.menuBar()
 
-        # Crear el menú "File"
+        # File menu
         fileMenu = menubar.addMenu('File')
-
-        # Crear una acción para "Exit" y añadirla al menú "File"
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
         fileMenu.addAction(exitAction)
 
-        # Crear el menú "Edit"
-        editMenu = menubar.addMenu('Edit')
-
-        # Crear una acción para "Cut" y añadirla al menú "Edit"
+        # Messages select menu. Select a message ad its variables
+        # TODO: Implement this, probably better on a function outside, this will be long
+        # Sort alphabetically, this will be big
+        # More ideas: Use checkboxes per variable
+        editMenu = menubar.addMenu('Messages')
         cutAction = QAction('Cut', self)
         cutAction.setShortcut('Ctrl+X')
         cutAction.setStatusTip('Cut selected text')
         editMenu.addAction(cutAction)
 
-        # Crear una acción para "Copy" y añadirla al menú "Edit"
-        copyAction = QAction('Copy', self)
-        copyAction.setShortcut('Ctrl+C')
-        copyAction.setStatusTip('Copy selected text')
-        editMenu.addAction(copyAction)
-
-        # Crear una acción para "Paste" y añadirla al menú "Edit"
-        pasteAction = QAction('Paste', self)
-        pasteAction.setShortcut('Ctrl+V')
-        pasteAction.setStatusTip('Paste from clipboard')
-        editMenu.addAction(pasteAction)
-
-        # Crear el menú "Help"
+        # Help menu
         helpMenu = menubar.addMenu('Help')
-
-        # Crear una acción para "About" y añadirla al menú "Help"
-        aboutAction = QAction('About', self)
-        aboutAction.setStatusTip('Show application info')
+        aboutAction = QAction('About (GitHub repo)', self)
+        aboutAction.setStatusTip('Show application GitHub repo')
         aboutAction.triggered.connect(self.open_about_url)
         helpMenu.addAction(aboutAction)
 
-        # Creación de un botón
-        btn = QPushButton('Haz clic aquí', self)
-        btn.move(150, 80)
-        btn.clicked.connect(self.show_message)
+        # Show matplotlib canvas in the center of the window
+        centralWidget = QWidget()
+        self.setCentralWidget(centralWidget)
+        layout = QVBoxLayout(centralWidget)
+        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        layout.addWidget(self.canvas)
 
         self.show()
 
     def open_about_url(self):
-        # Abrir una URL cuando se hace clic en "About"
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
-
-    def show_message(self):
-        # Mostrar un mensaje cuando se hace clic en el botón
-        QMessageBox.information(self, 'Mensaje', '¡Hola, mundo!')

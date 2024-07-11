@@ -4,10 +4,10 @@ New version of Paparazzi's logplotter utility, focused around NumPy.
 
 ## Usage
 
-First, install Python and numpy on your system:
+First, install Python and NumPy on your system:
 
 ```bash
-sudo apt install python3-full python3-numpy python3-lxml python3-pyqt5 -y
+sudo apt install python3-full python3-numpy python3-matplotlib python3-lxml python3-pyqt5 -y
 ```
 
 Run (GUI):
