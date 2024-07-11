@@ -1,8 +1,9 @@
 # pprz-py-plotter
 
-New version of Paparazzi's logplotter utility. Now with support for numpy.
+New version of Paparazzi's logplotter utility, focused around NumPy.
 
 ## Usage
+
 First, install Python and numpy on your system:
 
 ```bash
@@ -12,11 +13,41 @@ sudo apt install python3-full python3-numpy python3-lxml
 Run:
 
 ```bash
-./pprz-py-plotter filename.data filename.log
+./pprz-py-plotter filename.data filename.log [-v/--verbose]
 ```
 
-This will convert the data to a numpy array format, in txt file
+By default, this will convert the data to a NumPy array format, in a plain text file `.npy` file.
+Results will be saved in the `output` folder, in folders, one with each message.
+For example, we want to extract the `INS` message from the example log, results will be like this:
+
+```bash
+output
+└── INS
+    ├── ins_xdd.npy
+    ├── ins_xd.npy
+    ├── ins_x.npy
+    ├── ins_ydd.npy
+    ├── ins_yd.npy
+    ├── ins_y.npy
+    ├── ins_zdd.npy
+    ├── ins_zd.npy
+    ├── ins_z.npy
+    └── TIMESTAMP.npy
+```
+
+Where every file is a variable inside the message, plus the `TIMESTAMP` variable extracted from the `.data` file.
+
+## Extended Usage
+
+TODO
+
+## Repo structure
+This repository directory structure is as follows:
+
+- `logs`: Example logs for testing. Extracted from a Bebop2's log in Paparazzi 6.4
+- `pprzlogutils`: A small library for decoupling the functions and variables. Nothing too fancy.
 
 ## Useful Links
+
 - https://numpy.org/doc/stable/reference/generated/numpy.array.html
 - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
