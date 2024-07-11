@@ -1,4 +1,11 @@
-# TODO: Put info here
+"""
+pprzlogutils - A Python library for parsing and processing Paparazzi UAV log files.
+
+This library provides functions to parse Paparazzi UAV log files and extract telemetry data. 
+It also includes utilities to convert the extracted data into numpy arrays for further analysis.
+
+Author: Pelochus
+"""
 
 import numpy
 import os
@@ -121,6 +128,16 @@ def parse_datafile(datafile, verbose=False):
                 with open(output_file, 'a', encoding='utf-8') as f:
                     f.write(str(linedata))
                     f.write('\n')
+
+#####################################################################
+#####################################################################
+# Numpy section
+# Related and useful Links:
+# https://numpy.org/doc/stable/reference/generated/numpy.array.html
+# https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
+#####################################################################
+#####################################################################
+
 '''
     Convert a certain message (for example, position messages) to a numpy array
     Only for a certain ID. Convert the array of messages

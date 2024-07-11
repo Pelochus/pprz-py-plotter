@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 
-# TODO: Put info here
+"""
+pprz-py-plotter - Plotting Paparazzi log and data files with Python, NumPy and Matplotlib
 
-# Related Links:
-# https://numpy.org/doc/stable/reference/generated/numpy.array.html
-# https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
+Recommended to read the provided pprzlogutils library documentation for more information.
+
+Author: Pelochus
+"""
 
 import argparse
-import sys
 import os
 
-sys.path.append('./pprzlogutils')
-import logparser as lp
+import pprzlogutils.logparser as lp
+
+# Constants
+UAV_ID = 204
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -23,7 +26,7 @@ if __name__ == '__main__':
     os.makedirs(lp.OUTPUT_DIR, exist_ok=True)
     os.makedirs(lp.TMP_DIR, exist_ok=True)
 
-    # Parse logfile for messages and its variables
+    # Parse logfile for messages and their variables
     with open(args.logfile, 'r', encoding='utf-8') as logfile:
         lp.make_messages_xml(logfile.read())
         lp.create_structs()
@@ -41,4 +44,4 @@ if __name__ == '__main__':
     # Convert datafile to numpy arrays
     with open(args.datafile, 'r', encoding='utf-8') as datafile:
         lp.parse_datafile(datafile)
-        lp.convert_message_to_numpy(204, 'INS')
+        lp.convert_message_to_numpy(UAV_ID, 'INS')
