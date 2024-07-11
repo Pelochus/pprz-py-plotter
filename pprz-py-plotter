@@ -20,8 +20,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help="Display debug messages")
     args = parser.parse_args()
 
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs(TMP_DIR, exist_ok=True)
+    os.makedirs(lp.OUTPUT_DIR, exist_ok=True)
+    os.makedirs(lp.TMP_DIR, exist_ok=True)
 
     # Parse logfile for messages and its variables
     with open(args.logfile, 'r', encoding='utf-8') as logfile:
@@ -29,12 +29,12 @@ if __name__ == '__main__':
         lp.create_structs()
 
         if args.verbose:
-            for n in MESSAGES_TYPES:
-                print(n, MESSAGES_TYPES[n])
+            for n in lp.MESSAGES_TYPES:
+                print(n, lp.MESSAGES_TYPES[n])
 
         # Example of usage
         '''
-            b = MESSAGES_TYPES["PONG"](1)
+            b = lp.MESSAGES_TYPES["PONG"](1)
             print(b, b.TIMESTAMP)
         '''
 
