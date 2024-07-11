@@ -64,15 +64,7 @@ class pyplottergui(QMainWindow):
         exitAction.triggered.connect(self.close)
         fileMenu.addAction(exitAction)
 
-        # Messages select menu. Select a message ad its variables
-        # TODO: Implement this, probably better on a function outside, this will be long
-        # Sort alphabetically, this will be big
-        # More ideas: Use checkboxes per variable
-        editMenu = menubar.addMenu('Messages')
-        cutAction = QAction('Cut', self)
-        cutAction.setShortcut('Ctrl+X')
-        cutAction.setStatusTip('Cut selected text')
-        editMenu.addAction(cutAction)
+        self.messages_menu()
 
         # Help menu
         helpMenu = menubar.addMenu('Help')
@@ -92,3 +84,13 @@ class pyplottergui(QMainWindow):
 
     def open_about_url(self):
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
+
+    def messages_menu(self):
+        # Messages select menu. Select a message ad its variables
+        # TODO: Implement this, probably better on a function outside, this will be long
+        # Sort alphabetically, this will be big
+        # More ideas: Use checkboxes per variable
+        editMenu = self.menubar.addMenu('Messages')
+        cutAction = QAction('Cut', self)
+        cutAction.setStatusTip('Select messages and their variables to plot')
+        editMenu.addAction(cutAction)
