@@ -6,6 +6,8 @@ pyplottergui provides the GUI for the application based in Qt5.
 Author: Pelochus
 """
 
+import os
+import sys
 import webbrowser
 
 # TODO: Remove unnecesary ones
@@ -45,8 +47,10 @@ class MplCanvas(FigureCanvas):
         self.draw()
 
 class pyplottergui(QMainWindow):
-    def __init__(self):
+    def __init__(self, folder_path):
         super().__init__()
+
+        self.folder_path = folder_path
 
         # Main window config
         self.setWindowTitle('pprz-py-plotter')
@@ -54,10 +58,10 @@ class pyplottergui(QMainWindow):
         self.setWindowIcon(QIcon('img/logo.png'))
 
         # Menu bar
-        menubar = self.menuBar()
+        self.menubar = self.menuBar()
 
         # File menu
-        fileMenu = menubar.addMenu('File')
+        fileMenu = self.menubar.addMenu('File')
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
@@ -67,7 +71,7 @@ class pyplottergui(QMainWindow):
         self.messages_menu()
 
         # Help menu
-        helpMenu = menubar.addMenu('Help')
+        helpMenu = self.menubar.addMenu('Help')
         aboutAction = QAction('About (GitHub repo)', self)
         aboutAction.setStatusTip('Show application GitHub repo')
         aboutAction.triggered.connect(self.open_about_url)

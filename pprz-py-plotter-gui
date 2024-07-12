@@ -14,29 +14,30 @@ import os
 import pprzlogutils.pyplottergui as ui
 import pprzlogutils.logparser as lp
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QMessageBox,
+)
 
 # Constants
 ID_LIST = []
 
-def run_gui():
+def start_gui():
     app = QApplication(sys.argv)
-    ex = ui.pyplottergui()
-    sys.exit(app.exec_())
+    folder_path = QFileDialog.getExistingDirectory(None, 
+    "Select a folder with a .log and .data files", "We recommend using the ./logs folder")
+    
+    if folder_path:
+        ex = ui.pyplottergui(folder_path)
+        sys.exit(app.exec_())
+    else:
+        QMessageBox.warning(None, 'Warning!', 'No folder selected. Closing application...')
+        sys.exit()
 
 if __name__ == '__main__':
-
-    run_gui()
-
+    # Previous comprobations to run the GUI
     os.makedirs(lp.OUTPUT_DIR, exist_ok=True)
     os.makedirs(lp.TMP_DIR, exist_ok=True)
-
-    # Parse logfile for messages and their variables
-    with open(args.logfile, 'r', encoding='utf-8') as logfile:
-        lp.make_messages_xml(logfile.read())
-        lp.create_structs()
-
-    # Convert datafile to numpy arrays
-    with open(args.datafile, 'r', encoding='utf-8') as datafile:
-        lp.parse_datafile(datafile)
-        lp.convert_message_to_numpy(UAV_ID, 'INS')
+    
+    start_gui()
