@@ -73,8 +73,13 @@ class pyplottergui(QMainWindow):
         self.menubar = self.menuBar()
 
         # File menu
-        # RECORDATORIO: AÑADIR NUEVA VENTANA, PARA TENER VARIOS PLOTS
         fileMenu = self.menubar.addMenu('File')
+        
+        newWindowAction = QAction('New Window', self)
+        newWindowAction.setStatusTip('Open a new window')
+        newWindowAction.triggered.connect(self.open_new_window)
+        fileMenu.addAction(newWindowAction)
+
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
@@ -86,6 +91,7 @@ class pyplottergui(QMainWindow):
 
         # Help menu
         helpMenu = self.menubar.addMenu('Help')
+
         aboutAction = QAction('About (GitHub repo)', self)
         aboutAction.setStatusTip('Show application GitHub repo')
         aboutAction.triggered.connect(self.open_about_url)
@@ -100,6 +106,10 @@ class pyplottergui(QMainWindow):
 
         self.show()
 
+    def open_new_window(self):
+        new_window = pyplottergui(self.log_path, self.data_path)
+        new_window.show()
+
     def open_about_url(self):
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
 
@@ -107,6 +117,7 @@ class pyplottergui(QMainWindow):
     def messages_menu(self):
         editMenu = self.menubar.addMenu('Messages')
 
+        # Better added in groups, so the menu is not too long
         msg_a_c = editMenu.addMenu('A-C')
         msg_a_c.setStatusTip('Messages A to C included')
 
@@ -132,7 +143,7 @@ class pyplottergui(QMainWindow):
         msg_v_z.setStatusTip('Messages V to Z included')
 
         msg_submenus = []
-        ordered_keys = sorted(lp.MESSAGES_TYPES.keys(), key=str.lower)
+        ordered_keys = sorted(lp.MESSAGES_TYPES.keys(), key=str.lower) # Alphabetical order
         for message in ordered_keys:
             # Friendly reminder, -1 is last element
             if message[0] in 'ABC':
@@ -152,6 +163,7 @@ class pyplottergui(QMainWindow):
             else:
                 msg_submenus.append(msg_v_z.addMenu(message))
  
+            # Add the variables to the submenu as checkboxes
             for var in lp.MESSAGES_TYPES[message]._fields:
                 action = QAction(var, self)
                 action.setCheckable(True)
