@@ -4,11 +4,14 @@ pprzlogutils - A Python library for parsing and processing Paparazzi UAV log fil
 pyplottergui provides the GUI for the application based in Qt5.
 
 Author: Pelochus
+Date: July 2024
 """
 
 import os
 import sys
 import webbrowser
+
+import pprzlogutils.logparser as lp
 
 # TODO: Remove unnecesary ones
 from PyQt5.QtCore import QSize, Qt
@@ -34,6 +37,7 @@ class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=16, height=9, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
+
         super().__init__(fig)
         self.setParent(parent)
         
@@ -47,10 +51,18 @@ class MplCanvas(FigureCanvas):
         self.draw()
 
 class pyplottergui(QMainWindow):
-    def __init__(self, folder_path):
+    def __init__(self, log, data):
         super().__init__()
 
-        self.folder_path = folder_path
+        self.log_path = log
+        self.data_path = data
+
+        # Parse log file and create structure
+        lp.make_messages_xml(self.log_path.read())
+        lp.create_structs()
+
+        # Parse data file and fill structure
+        lp.parse_datafile(self.data_path)
 
         # Main window config
         self.setWindowTitle('pprz-py-plotter')
@@ -61,6 +73,7 @@ class pyplottergui(QMainWindow):
         self.menubar = self.menuBar()
 
         # File menu
+        # RECORDATORIO: AÑADIR NUEVA VENTANA, PARA TENER VARIOS PLOTS
         fileMenu = self.menubar.addMenu('File')
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
@@ -68,6 +81,7 @@ class pyplottergui(QMainWindow):
         exitAction.triggered.connect(self.close)
         fileMenu.addAction(exitAction)
 
+        # Messages menu, see function below
         self.messages_menu()
 
         # Help menu
@@ -89,12 +103,55 @@ class pyplottergui(QMainWindow):
     def open_about_url(self):
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
 
+    # Messages select menu. Select a message and its variables to plot
     def messages_menu(self):
-        # Messages select menu. Select a message ad its variables
-        # TODO: Implement this, probably better on a function outside, this will be long
-        # Sort alphabetically, this will be big
-        # More ideas: Use checkboxes per variable
         editMenu = self.menubar.addMenu('Messages')
-        cutAction = QAction('Cut', self)
-        cutAction.setStatusTip('Select messages and their variables to plot')
-        editMenu.addAction(cutAction)
+
+        msg_a_c = editMenu.addMenu('A-C')
+        msg_a_c.setStatusTip('Messages A to C included')
+
+        msg_d_f = editMenu.addMenu('D-F')
+        msg_d_f.setStatusTip('Messages D to F included')
+
+        msg_g_i = editMenu.addMenu('G-I')
+        msg_g_i.setStatusTip('Messages G to I included')
+
+        msg_j_l = editMenu.addMenu('J-L')
+        msg_j_l.setStatusTip('Messages J to L included')
+
+        msg_m_o = editMenu.addMenu('M-O')
+        msg_m_o.setStatusTip('Messages M to O included')
+
+        msg_p_r = editMenu.addMenu('P-R')
+        msg_p_r.setStatusTip('Messages P to R included')
+
+        msg_s_u = editMenu.addMenu('S-U')
+        msg_s_u.setStatusTip('Messages S to U included')
+
+        msg_v_z = editMenu.addMenu('V-Z')
+        msg_v_z.setStatusTip('Messages V to Z included')
+
+        actions = []
+        ordered_keys = sorted(lp.MESSAGES_TYPES.keys(), key=str.lower)
+
+        # Friendly reminder, -1 is last element
+        for message in ordered_keys:
+            actions.append(QAction(message, self))
+            actions[-1].setStatusTip('Select message and its variables to plot')
+
+            if message[0] in 'ABC':
+                msg_a_c.addAction(actions[-1])
+            elif message[0] in 'DEF':
+                msg_d_f.addAction(actions[-1])
+            elif message[0] in 'GHI':
+                msg_g_i.addAction(actions[-1])
+            elif message[0] in 'JKL':
+                msg_j_l.addAction(actions[-1])
+            elif message[0] in 'MNO':
+                msg_m_o.addAction(actions[-1])
+            elif message[0] in 'PQR':
+                msg_p_r.addAction(actions[-1])
+            elif message[0] in 'STU':
+                msg_s_u.addAction(actions[-1])
+            else:
+                msg_v_z.addAction(actions[-1])
