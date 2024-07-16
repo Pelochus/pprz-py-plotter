@@ -131,27 +131,30 @@ class pyplottergui(QMainWindow):
         msg_v_z = editMenu.addMenu('V-Z')
         msg_v_z.setStatusTip('Messages V to Z included')
 
-        actions = []
+        msg_submenus = []
         ordered_keys = sorted(lp.MESSAGES_TYPES.keys(), key=str.lower)
-
-        # Friendly reminder, -1 is last element
         for message in ordered_keys:
-            actions.append(QAction(message, self))
-            actions[-1].setStatusTip('Select message and its variables to plot')
-
+            # Friendly reminder, -1 is last element
             if message[0] in 'ABC':
-                msg_a_c.addAction(actions[-1])
+                msg_submenus.append(msg_a_c.addMenu(message))
             elif message[0] in 'DEF':
-                msg_d_f.addAction(actions[-1])
+                msg_submenus.append(msg_d_f.addMenu(message))
             elif message[0] in 'GHI':
-                msg_g_i.addAction(actions[-1])
+                msg_submenus.append(msg_g_i.addMenu(message))
             elif message[0] in 'JKL':
-                msg_j_l.addAction(actions[-1])
+                msg_submenus.append(msg_j_l.addMenu(message))
             elif message[0] in 'MNO':
-                msg_m_o.addAction(actions[-1])
+                msg_submenus.append(msg_m_o.addMenu(message))
             elif message[0] in 'PQR':
-                msg_p_r.addAction(actions[-1])
+                msg_submenus.append(msg_p_r.addMenu(message))
             elif message[0] in 'STU':
-                msg_s_u.addAction(actions[-1])
+                msg_submenus.append(msg_s_u.addMenu(message))
             else:
-                msg_v_z.addAction(actions[-1])
+                msg_submenus.append(msg_v_z.addMenu(message))
+ 
+            for var in lp.MESSAGES_TYPES[message]._fields:
+                action = QAction(var, self)
+                action.setCheckable(True)
+                action.setChecked(False )
+                action.triggered.connect(lambda checked, v=var: self.handle_checkbox(checked, v))
+                msg_submenus[-1].addAction(action)
