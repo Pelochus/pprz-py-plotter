@@ -101,7 +101,7 @@ class pyplottergui(QMainWindow):
         refreshButton = QPushButton('Refresh Plot', self)
         refreshButton.setShortcut(QKeySequence(Qt.Key_F5))
         refreshButton.setToolTip('Refresh the plot (F5)')
-        refreshButton.clicked.connect(self.canvas.refresh_plot)
+        refreshButton.clicked.connect(lambda: self.canvas.refresh_plot(self.current_id, self.checkboxes))
         buttonLayout.addStretch(1)
         buttonLayout.addWidget(refreshButton)
         layout.addLayout(buttonLayout)
@@ -125,7 +125,7 @@ class pyplottergui(QMainWindow):
             ids.append(QAction('ID ' + str(id), self))
             ids[-1].setCheckable(True)
             ids[-1].setChecked(False)
-            ids[-1].triggered.connect(lambda: self.handle_id_checkbox(1))
+            ids[-1].triggered.connect(lambda: self.handle_id_checkbox(ids[-1], id))
             idGroup.addAction(ids[-1])
             idMenu.addAction(ids[-1])
 
@@ -197,13 +197,12 @@ class pyplottergui(QMainWindow):
                 # Initialize all to false
                 self.checkboxes[message][var] = False
                  
-    def handle_id_checkbox(self, id):
-        if id in self.checkboxes['IDs'].actions():
-            if id.isChecked():
-                self.current_id = id
-                pass
-            else:
-                pass
+    def handle_id_checkbox(self, idcheck, id):
+        if idcheck.isChecked():
+            self.current_id = id
+            print("Current ID selected: ", self.current_id)
+        else:
+            pass
 
     def handle_checkbox(self, checked, message, var):
         if checked:
@@ -243,13 +242,14 @@ class MplCanvas(FigureCanvas):
 
     # TODO: Check correct functionality
     # Plot every variable that is checked
-    def plot_checked(self, id):
-        for message in self.checkboxes.keys():
-            for var in self.checkboxes[message].keys():
-                if self.checkboxes[message][var].isChecked():
+    def plot_checked(self, id, checkboxes):
+        for message in checkboxes.keys():
+            for var in checkboxes[message]:
+                if checkboxes[message][var].isChecked():
                     self.plot_var(id, message, var)
 
-    def refresh_plot(self):
+    def refresh_plot(self, id, checkboxes):
         self.axes.clear()
         # self.plot_example()
-        self.plot_checked(self.current_id)
+        self.plot_checked(id, checkboxes)
+        self.draw()
