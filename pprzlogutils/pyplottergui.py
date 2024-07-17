@@ -35,34 +35,6 @@ from PyQt5.QtWidgets import (
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-class MplCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=16, height=9, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-
-        super().__init__(fig)
-        self.setParent(parent)
-        
-        self.plot_example()
-
-    # Default plot, as an example
-    def plot_example(self):
-        x = [0, 1, 2, 3, 4]
-        y = [0, 1, 4, 9, 16]
-        self.axes.plot(x, y)
-        self.draw()
-
-    '''def plot(self):
-        arrays = []
-        for message in self.parent().checkboxes:
-            for var in message._fields:
-                if self.parent().checkboxes[message][var]:
-                    arrays.append(lp.MESSAGES_TYPES[message][var])'''
-
-    def refresh_plot(self):
-        self.axes.clear()
-        self.plot_example()
-
 class pyplottergui(QMainWindow):
     def __init__(self, log, data):
         super().__init__()
@@ -83,7 +55,8 @@ class pyplottergui(QMainWindow):
         self.setWindowIcon(QIcon('img/logo.png'))
 
         # Checkboxes dictionary
-        self.checkboxes = {} 
+        self.checkboxes = {}
+        self.current_id = None
 
         # Menu bar
         self.menubar = self.menuBar()
@@ -103,20 +76,7 @@ class pyplottergui(QMainWindow):
         fileMenu.addAction(exitAction)
 
         # ID selection menu
-        idMenu = self.menubar.addMenu('IDs')
-        idGroup = QActionGroup(self)
-
-        ids = []
-        for id in lp.DATA_DICT.keys():
-            ids.append(QAction('ID ' + str(id), self))
-            ids[-1].setCheckable(True)
-            ids[-1].setChecked(False)
-            ids[-1].triggered.connect(lambda: self.handle_id_checkbox(1))
-            idGroup.addAction(ids[-1])
-            idMenu.addAction(ids[-1])
-
-        # Add the QActionGroup to the checkboxes dictionary
-        self.checkboxes['IDs'] = idGroup
+        self.id_menu()
 
         # Messages menu, see function below
         self.messages_menu()
@@ -155,6 +115,23 @@ class pyplottergui(QMainWindow):
     def open_about_url(self):
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
 
+    # ID selection menu
+    def id_menu(self):
+        idMenu = self.menubar.addMenu('IDs')
+        idGroup = QActionGroup(self)
+
+        ids = []
+        for id in lp.DATA_DICT.keys():
+            ids.append(QAction('ID ' + str(id), self))
+            ids[-1].setCheckable(True)
+            ids[-1].setChecked(False)
+            ids[-1].triggered.connect(lambda: self.handle_id_checkbox(1))
+            idGroup.addAction(ids[-1])
+            idMenu.addAction(ids[-1])
+
+        # Add the QActionGroup to the checkboxes dictionary
+        self.checkboxes['IDs'] = idGroup
+    
     # Messages select menu. Select a message and its variables to plot
     def messages_menu(self):
         editMenu = self.menubar.addMenu('Messages')
@@ -214,26 +191,65 @@ class pyplottergui(QMainWindow):
                 action.setCheckable(True)
                 action.setChecked(False)
                 
-                action.triggered.connect(lambda checked, v=var: self.handle_checkbox(checked, v))
+                action.triggered.connect(lambda checked, m=message, v=var: self.handle_checkbox(checked, m, v))
                 msg_submenus[-1].addAction(action)
 
-                # self.checkboxes[message][var] =
+                # Initialize all to false
+                self.checkboxes[message][var] = False
                  
     def handle_id_checkbox(self, id):
-            # TODO: Implement the logic for handling the ID checkbox
-            if id in self.checkboxes['IDs'].actions():
-                if id.isChecked():
-                    # ID checkbox is checked, do something
-                    pass
-                else:
-                    # ID checkbox is unchecked, do something else
-                    pass
+        if id in self.checkboxes['IDs'].actions():
+            if id.isChecked():
+                self.current_id = id
+                pass
+            else:
+                pass
 
-    def handle_checkbox(self, checked, var):
-        # TODO: Implement the logic for handling the variable checkbox
+    def handle_checkbox(self, checked, message, var):
         if checked:
-            # Variable checkbox is checked, do something
-            pass
+            self.checkboxes[message][var] = True
         else:
-            # Variable checkbox is unchecked, do something else
-            pass 
+            self.checkboxes[message][var] = False
+            pass
+
+#####################################################################
+#####################################################################
+# Matplotlib section
+# Related and useful Links:
+# https://matplotlib.org/stable/gallery/index.html
+#####################################################################
+#####################################################################
+
+class MplCanvas(FigureCanvas):
+    def __init__(self, parent=None, width=16, height=9, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+
+        super().__init__(fig)
+        self.setParent(parent)
+        
+        self.plot_example()
+
+    # Default plot, as an example
+    def plot_example(self):
+        x = [0, 1, 2, 3, 4]
+        y = [0, 1, 4, 9, 16]
+        self.axes.plot(x, y)
+        self.draw()
+
+    # Plot a single variable
+    def plot_var(self, id, message, var):
+        self.axes.plot(lp.convert_var_to_numpy(id, message, var))
+
+    # TODO: Check correct functionality
+    # Plot every variable that is checked
+    def plot_checked(self, id):
+        for message in self.checkboxes.keys():
+            for var in self.checkboxes[message].keys():
+                if self.checkboxes[message][var].isChecked():
+                    self.plot_var(id, message, var)
+
+    def refresh_plot(self):
+        self.axes.clear()
+        # self.plot_example()
+        self.plot_checked(self.current_id)
