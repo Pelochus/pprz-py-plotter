@@ -15,11 +15,13 @@ import pprzlogutils.logparser as lp
 
 # TODO: Remove unnecesary ones
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
+    QActionGroup,
     QApplication,
     QCheckBox,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -43,12 +45,23 @@ class MplCanvas(FigureCanvas):
         
         self.plot_example()
 
+    # Default plot, as an example
     def plot_example(self):
-        # Ejemplo de un gráfico simple
         x = [0, 1, 2, 3, 4]
         y = [0, 1, 4, 9, 16]
         self.axes.plot(x, y)
         self.draw()
+
+    '''def plot(self):
+        arrays = []
+        for message in self.parent().checkboxes:
+            for var in message._fields:
+                if self.parent().checkboxes[message][var]:
+                    arrays.append(lp.MESSAGES_TYPES[message][var])'''
+
+    def refresh_plot(self):
+        self.axes.clear()
+        self.plot_example()
 
 class pyplottergui(QMainWindow):
     def __init__(self, log, data):
@@ -69,6 +82,9 @@ class pyplottergui(QMainWindow):
         self.setGeometry(600, 600, 800, 400)
         self.setWindowIcon(QIcon('img/logo.png'))
 
+        # Checkboxes dictionary
+        self.checkboxes = {} 
+
         # Menu bar
         self.menubar = self.menuBar()
 
@@ -85,6 +101,22 @@ class pyplottergui(QMainWindow):
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
         fileMenu.addAction(exitAction)
+
+        # ID selection menu
+        idMenu = self.menubar.addMenu('IDs')
+        idGroup = QActionGroup(self)
+
+        ids = []
+        for id in lp.DATA_DICT.keys():
+            ids.append(QAction('ID ' + str(id), self))
+            ids[-1].setCheckable(True)
+            ids[-1].setChecked(False)
+            ids[-1].triggered.connect(lambda: self.handle_id_checkbox(1))
+            idGroup.addAction(ids[-1])
+            idMenu.addAction(ids[-1])
+
+        # Add the QActionGroup to the checkboxes dictionary
+        self.checkboxes['IDs'] = idGroup
 
         # Messages menu, see function below
         self.messages_menu()
@@ -103,6 +135,16 @@ class pyplottergui(QMainWindow):
         layout = QVBoxLayout(centralWidget)
         self.canvas = MplCanvas(self, width=16, height=10, dpi=100)
         layout.addWidget(self.canvas)
+
+        # Add refresh plot button
+        buttonLayout = QHBoxLayout()
+        refreshButton = QPushButton('Refresh Plot', self)
+        refreshButton.setShortcut(QKeySequence(Qt.Key_F5))
+        refreshButton.setToolTip('Refresh the plot (F5)')
+        refreshButton.clicked.connect(self.canvas.refresh_plot)
+        buttonLayout.addStretch(1)
+        buttonLayout.addWidget(refreshButton)
+        layout.addLayout(buttonLayout)
 
         self.show()
 
@@ -145,6 +187,9 @@ class pyplottergui(QMainWindow):
         msg_submenus = []
         ordered_keys = sorted(lp.MESSAGES_TYPES.keys(), key=str.lower) # Alphabetical order
         for message in ordered_keys:
+            # Create inner dict
+            self.checkboxes[message] = {}
+
             # Friendly reminder, -1 is last element
             if message[0] in 'ABC':
                 msg_submenus.append(msg_a_c.addMenu(message))
@@ -167,6 +212,28 @@ class pyplottergui(QMainWindow):
             for var in lp.MESSAGES_TYPES[message]._fields:
                 action = QAction(var, self)
                 action.setCheckable(True)
-                action.setChecked(False )
+                action.setChecked(False)
+                
                 action.triggered.connect(lambda checked, v=var: self.handle_checkbox(checked, v))
                 msg_submenus[-1].addAction(action)
+
+                # self.checkboxes[message][var] =
+                 
+    def handle_id_checkbox(self, id):
+            # TODO: Implement the logic for handling the ID checkbox
+            if id in self.checkboxes['IDs'].actions():
+                if id.isChecked():
+                    # ID checkbox is checked, do something
+                    pass
+                else:
+                    # ID checkbox is unchecked, do something else
+                    pass
+
+    def handle_checkbox(self, checked, var):
+        # TODO: Implement the logic for handling the variable checkbox
+        if checked:
+            # Variable checkbox is checked, do something
+            pass
+        else:
+            # Variable checkbox is unchecked, do something else
+            pass 

@@ -46,7 +46,7 @@ def start_gui():
         ex = ui.pyplottergui(log_file, data_file)
         sys.exit(app.exec_())
     else:
-        QMessageBox.warning(None, 'Warning!', 'No folder selected. Closing application...')
+        QMessageBox.warning(None, 'Warning!', 'No folder selected.\nClosing application...')
         sys.exit()
 
 if __name__ == '__main__':
