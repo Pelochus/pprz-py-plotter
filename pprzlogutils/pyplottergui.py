@@ -128,9 +128,6 @@ class pyplottergui(QMainWindow):
             ids[-1].triggered.connect(lambda: self.handle_id_checkbox(ids[-1], id))
             idGroup.addAction(ids[-1])
             idMenu.addAction(ids[-1])
-
-        # Add the QActionGroup to the checkboxes dictionary
-        self.checkboxes['IDs'] = idGroup
     
     # Messages select menu. Select a message and its variables to plot
     def messages_menu(self):
@@ -200,7 +197,7 @@ class pyplottergui(QMainWindow):
     def handle_id_checkbox(self, idcheck, id):
         if idcheck.isChecked():
             self.current_id = id
-            print("Current ID selected: ", self.current_id)
+            print("Current ID selected:", self.current_id)
         else:
             pass
 
@@ -245,11 +242,10 @@ class MplCanvas(FigureCanvas):
     def plot_checked(self, id, checkboxes):
         for message in checkboxes.keys():
             for var in checkboxes[message]:
-                if checkboxes[message][var].isChecked():
+                if checkboxes[message][var]:
                     self.plot_var(id, message, var)
 
     def refresh_plot(self, id, checkboxes):
         self.axes.clear()
-        # self.plot_example()
         self.plot_checked(id, checkboxes)
         self.draw()
