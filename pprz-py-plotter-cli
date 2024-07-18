@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # Parse logfile for messages and their variables
     with open(args.logfile, 'r', encoding='utf-8') as logfile:
         lp.make_messages_xml(logfile.read())
-        lp.create_structs()
+        lp.create_structs(lp.TELEMETRY_OUTPUT_FILENAME)
 
         if args.verbose:
             for n in lp.MESSAGES_TYPES:

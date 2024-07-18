@@ -16,7 +16,8 @@ from lxml import etree
 
 # Constants
 MESSAGES_BLOCK = 'protocol/msg_class'
-MESSAGES_OUTPUT_FILENAME = 'telemetry_messages.xml'
+TELEMETRY_OUTPUT_FILENAME = 'telemetry_messages.xml'
+DATALINK_OUTPUT_FILENAME = 'datalink_messages.xml'
 DATA_OUTPUT_FILENAME = 'data_log.txt'
 OUTPUT_DIR = './output'
 TMP_DIR = './tmp'
@@ -48,18 +49,23 @@ def make_messages_xml(logfile):
     for msg_class in root.findall(MESSAGES_BLOCK):
         if msg_class.get('NAME') == 'telemetry' and msg_class.get('ID') == '1':
             telemetry_xml = etree.tostring(msg_class, encoding='unicode')
-            break
-        else:
-            print("No telemetry messages found in the logfile!")
-            exit(1)
+        elif msg_class.get('NAME') == 'datalink' and msg_class.get('ID') == '2':
+            datalink_xml = etree.tostring(msg_class, encoding='unicode')
 
     telemetry_xml = clean_and_format_xml(telemetry_xml)
+    datalink_xml = clean_and_format_xml(datalink_xml)
         
     # Save the msg_class block in a file
-    output_file = os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME)
+    output_file = os.path.join(TMP_DIR, TELEMETRY_OUTPUT_FILENAME)
     if telemetry_xml:
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(telemetry_xml)
+        
+    # Save the msg_class block in a file
+    output_file = os.path.join(TMP_DIR, DATALINK_OUTPUT_FILENAME)
+    if datalink_xml:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(datalink_xml)
 
 '''
     Create data structures for each message
@@ -68,8 +74,8 @@ def make_messages_xml(logfile):
     INS(timestamp, x, y, z, vx, vy, vz, ax, ay, az)
     GVF(timestamp, error, traj, s, ke, p)
 '''
-def create_structs():
-    with open(os.path.join(TMP_DIR, MESSAGES_OUTPUT_FILENAME), 'r', encoding='utf-8') as f:
+def create_structs(messages_type):
+    with open(os.path.join(TMP_DIR, messages_type), 'r', encoding='utf-8') as f:
         parser = etree.XMLParser(remove_comments=True, recover=True)
         root = etree.fromstring(f.read(), parser)
 
