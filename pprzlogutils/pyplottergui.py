@@ -7,27 +7,17 @@ Author: Pelochus
 Date: July 2024
 """
 
-import os
-import sys
 import webbrowser
-
 import pprzlogutils.logparser as lp
 
-# TODO: Remove unnecesary ones
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
     QActionGroup,
-    QApplication,
-    QCheckBox,
     QHBoxLayout,
-    QLabel,
     QMainWindow,
-    QMessageBox,
     QPushButton,
-    QStatusBar,
-    QToolBar,
     QVBoxLayout,
     QWidget,
 )
@@ -35,6 +25,9 @@ from PyQt5.QtWidgets import (
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+'''
+    Main GUI class, based on PyQt5
+'''
 class pyplottergui(QMainWindow):
     def __init__(self, log, data):
         super().__init__()
@@ -106,6 +99,15 @@ class pyplottergui(QMainWindow):
         buttonLayout.addWidget(refreshButton)
         layout.addLayout(buttonLayout)
 
+        # Add clear all checks button
+        clearButton = QPushButton('Clear Checkboxes', self)
+        clearButton.setShortcut(QKeySequence(Qt.Key_F4))
+        clearButton.setToolTip('Clear all checkboxes (F4)')
+        clearButton.clicked.connect(lambda: self.clear_checkboxes())
+        buttonLayout.addStretch(1)
+        buttonLayout.addWidget(clearButton)
+        layout.addLayout(buttonLayout)
+
         self.show()
 
     def open_new_window(self):
@@ -115,7 +117,11 @@ class pyplottergui(QMainWindow):
     def open_about_url(self):
         webbrowser.open('https://github.com/Pelochus/pprz-py-plotter')
 
-    # ID selection menu
+    '''
+        ID select menu
+        Choose an UAV ID to plot
+        If you want to plot more than one ID, open a new window
+    '''
     def id_menu(self):
         idMenu = self.menubar.addMenu('IDs')
         idGroup = QActionGroup(self)
@@ -129,7 +135,10 @@ class pyplottergui(QMainWindow):
             idGroup.addAction(ids[-1])
             idMenu.addAction(ids[-1])
     
-    # Messages select menu. Select a message and its variables to plot
+    '''
+        Messages select menu. 
+        Select a message and its variables to plot
+    '''
     def messages_menu(self):
         editMenu = self.menubar.addMenu('Messages')
 
@@ -193,7 +202,10 @@ class pyplottergui(QMainWindow):
 
                 # Initialize all to false
                 self.checkboxes[message][var] = False
-                 
+
+    '''
+        Lambdas for handling checkboxes
+    '''
     def handle_id_checkbox(self, idcheck, id):
         if idcheck.isChecked():
             self.current_id = id
@@ -208,6 +220,12 @@ class pyplottergui(QMainWindow):
             self.checkboxes[message][var] = False
             pass
 
+    # TODO: Do properly, GUIs' checkboxes are still checked, only self.checkboxes is cleared
+    def clear_checkboxes(self):
+        for message in self.checkboxes.keys():
+            for var in self.checkboxes[message]:
+                self.checkboxes[message][var] = False
+
 #####################################################################
 #####################################################################
 # Matplotlib section
@@ -216,6 +234,11 @@ class pyplottergui(QMainWindow):
 #####################################################################
 #####################################################################
 
+'''
+    Matplotlib canvas class
+
+    This displays a matplotlib graph on the center of the window
+'''
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=16, height=9, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -230,14 +253,14 @@ class MplCanvas(FigureCanvas):
     def plot_example(self):
         x = [0, 1, 2, 3, 4]
         y = [0, 1, 4, 9, 16]
-        self.axes.plot(x, y)
+        self.axes.plot(x, y, label='Default plot')
+        self.axes.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         self.draw()
 
     # Plot a single variable
     def plot_var(self, id, message, var):
-        self.axes.plot(lp.convert_var_to_numpy(id, message, var))
+        self.axes.plot(lp.convert_var_to_numpy(id, message, var), label=message + ' - ' + var)
 
-    # TODO: Check correct functionality
     # Plot every variable that is checked
     def plot_checked(self, id, checkboxes):
         for message in checkboxes.keys():
@@ -245,7 +268,9 @@ class MplCanvas(FigureCanvas):
                 if checkboxes[message][var]:
                     self.plot_var(id, message, var)
 
+    # Draw plot with new checked variables
     def refresh_plot(self, id, checkboxes):
         self.axes.clear()
         self.plot_checked(id, checkboxes)
+        self.axes.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         self.draw()
