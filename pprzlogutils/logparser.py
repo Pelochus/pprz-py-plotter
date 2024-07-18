@@ -151,6 +151,8 @@ def convert_message_to_numpy(id, message):
 '''
     Convert a certain variable (say, x position from position messages) to a numpy array
     This will assume float values only
+
+    Returns the numpy array, too
 '''
 def convert_var_to_numpy(id, message, var):
     array = []

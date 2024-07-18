@@ -2,6 +2,8 @@
 
 New version of Paparazzi's logplotter utility, focused around NumPy.
 
+![GUI-Screenshot](https://github.com/Pelochus/pprz-py-plotter/blob/main/img/screenshot.png)
+
 ## Usage
 
 First, install Python and NumPy on your system:
@@ -19,7 +21,7 @@ Run (GUI):
 Run (CLI):
 
 ```bash
-./pprz-py-plotter filename.data filename.log [-v/--verbose]
+./pprz-py-plotter-cli filename.data filename.log [-v/--verbose]
 ```
 
 By default, this will convert the data to a NumPy array format, in a plain text file `.npy` file.
@@ -43,17 +45,15 @@ output
 
 Where every file is a variable inside the message, plus the `TIMESTAMP` variable extracted from the `.data` file.
 
-## Extended Usage
-
-TODO
-
 ## Repo structure
 This repository directory structure is as follows:
 
+- `ìmg`: Contains the logo and image files
 - `logs`: Example logs for testing. Extracted from a Bebop2's log in Paparazzi 6.4
 - `pprzlogutils`: A small library for decoupling the functions and variables. Nothing too fancy.
 
 ## Useful Links
 
+For usage with CLI, numpy and matplotlib:
 - https://numpy.org/doc/stable/reference/generated/numpy.array.html
 - https://numpy.org/doc/stable/reference/generated/numpy.savetxt.html
