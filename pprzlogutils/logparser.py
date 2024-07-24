@@ -81,7 +81,7 @@ def create_structs(messages_type):
 
         for msg in root.findall('message'):
             msg_name = msg.get('NAME')
-            msg_id = msg.get('ID')
+            # msg_id = msg.get('ID')
             msg_vars = msg.findall('field')
 
             # Create a named tuple for each message
@@ -92,7 +92,6 @@ def create_structs(messages_type):
                     fields.append(var.get('NAME'))
 
             # Create and save globally the named tuple
-            # print(msg_name, fields)
             MESSAGES_TYPES[msg_name] = namedtuple(msg_name, fields)
 
 '''
