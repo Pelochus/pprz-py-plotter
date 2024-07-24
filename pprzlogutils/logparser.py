@@ -87,9 +87,12 @@ def create_structs(messages_type):
             # Create a named tuple for each message
             fields = ['TIMESTAMP'] # To differentiate from a possible timestamp field inside the message
             for var in msg_vars:
-                fields.append(var.get('NAME'))
+                # Fix for some messages with a field named 'class'
+                if var.get('NAME') != 'class':
+                    fields.append(var.get('NAME'))
 
             # Create and save globally the named tuple
+            # print(msg_name, fields)
             MESSAGES_TYPES[msg_name] = namedtuple(msg_name, fields)
 
 '''

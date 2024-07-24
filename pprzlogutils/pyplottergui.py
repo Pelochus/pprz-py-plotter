@@ -38,7 +38,7 @@ class pyplottergui(QMainWindow):
         # Parse log file and create structure
         lp.make_messages_xml(self.log_path.read())
         lp.create_structs(lp.TELEMETRY_OUTPUT_FILENAME)
-        # lp.create_structs(lp.DATALINK_OUTPUT_FILENAME) TODO: Fix
+        lp.create_structs(lp.DATALINK_OUTPUT_FILENAME)
 
         # Parse data file and fill structure
         lp.parse_datafile(self.data_path)
