@@ -16,7 +16,7 @@ import os
 import pprzlogutils.logparser as lp
 
 # Constants
-UAV_ID = 204
+UAV_ID = 204 # For the default log/data files
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="pprz-py-plotter")
@@ -37,7 +37,7 @@ if __name__ == '__main__':
             for n in lp.MESSAGES_TYPES:
                 print(n, lp.MESSAGES_TYPES[n])
 
-        # Example of usage
+        # Usage example
         '''
             b = lp.MESSAGES_TYPES["PONG"](1)
             print(b, b.TIMESTAMP)

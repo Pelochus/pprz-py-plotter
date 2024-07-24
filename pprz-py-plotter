@@ -27,7 +27,7 @@ ID_LIST = []
 def start_gui():
     app = QApplication(sys.argv)
     folder_path = QFileDialog.getExistingDirectory(None, 
-    "Select a folder with one .log and one .data", "Recommended to use the ./logs folder")
+                  "Select a folder with one .log and one .data", "Recommended to use the ./logs folder")
     
     if folder_path:
         # Take the first .log file and .data file from the folder

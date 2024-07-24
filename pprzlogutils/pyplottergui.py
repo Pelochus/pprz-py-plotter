@@ -91,21 +91,21 @@ class pyplottergui(QMainWindow):
         layout.addWidget(self.canvas)
 
         # Add refresh plot button
-        buttonLayout = QHBoxLayout()
         refreshButton = QPushButton('Refresh Plot', self)
         refreshButton.setShortcut(QKeySequence(Qt.Key_F5))
         refreshButton.setToolTip('Refresh the plot (F5)')
         refreshButton.clicked.connect(lambda: self.canvas.refresh_plot(self.current_id, self.checkboxes))
-        buttonLayout.addStretch(1)
-        buttonLayout.addWidget(refreshButton)
-        layout.addLayout(buttonLayout)
 
         # Add clear all checks button
         clearButton = QPushButton('Clear Checkboxes', self)
         clearButton.setShortcut(QKeySequence(Qt.Key_F4))
         clearButton.setToolTip('Clear all checkboxes (F4)')
         clearButton.clicked.connect(lambda: self.clear_checkboxes())
+
+        # Add to layout
+        buttonLayout = QHBoxLayout()
         buttonLayout.addStretch(1)
+        buttonLayout.addWidget(refreshButton)
         buttonLayout.addWidget(clearButton)
         layout.addLayout(buttonLayout)
 
