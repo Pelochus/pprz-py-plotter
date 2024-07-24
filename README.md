@@ -3,6 +3,7 @@
 New version of Paparazzi's logplotter utility, focused around NumPy.
 
 ![GUI-Screenshot](https://github.com/Pelochus/pprz-py-plotter/blob/main/img/screenshot.png)
+_Screenshot under KDE Plasma 5, Breeze Dark theme_
 
 ## Usage
 
